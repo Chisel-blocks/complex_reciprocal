@@ -61,9 +61,9 @@ resolvers += "Sonatype Releases" at "https://oss.sonatype.org/content/repositori
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // [TODO] is simpler clearer?
 val defaultVersions = Map(
-  "chisel3" -> "3.2-SNAPSHOT",
-  "chisel-iotesters" -> "1.2.5",
-  "dsptools" -> "1.1.4"
+  "chisel3" -> "3.1.7",
+  "chisel-iotesters" -> "1.2.9",
+  "dsptools" -> "1.1.8"
   )
 
 libraryDependencies ++= (Seq("chisel3","chisel-iotesters","dsptools").map {
@@ -81,16 +81,16 @@ libraryDependencies  ++= Seq(
   // Native libraries greatly improve performance, but increase jar sizes. 
   // It also packages various blas implementations, which have licenses that may or may not
   // be compatible with the Apache License. No GPL code, as best I know.
-  "org.scalanlp" %% "breeze-natives" % "0.13.2",
+  //"org.scalanlp" %% "breeze-natives" % "0.13.2",
   
   // The visualization library is distributed separately as well.
   // It depends on LGPL code
-  "org.scalanlp" %% "breeze-viz" % "0.13.2"
+  //"org.scalanlp" %% "breeze-viz" % "0.13.2"
 )
 
 // Some common deps in BWRC projects, select if needed
 // TODO-how to figure out what version is the current and the best?
-libraryDependencies += "edu.berkeley.cs" %% "dsptools" % "1.1-SNAPSHOT"
+//libraryDependencies += "edu.berkeley.cs" %% "dsptools" % "1.1-SNAPSHOT"
 
 //libraryDependencies += "berkeley" %% "rocketchip" % "1.2"
 //libraryDependencies += "edu.berkeley.eecs" %% "ofdm" % "0.1"
