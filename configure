@@ -41,7 +41,7 @@ SCALAPATH=${ROOTPATH}/src/main/scala
 FIRRTL_JAR="$ROOTPATH/rocket-chip/firrtl/utils/bin/firrtl.jar"
 
 VPATHDIRS=`find ${SCALAPATH}/* -type d -exec basename '{}' ';'`
-MODULES="complex_residual"
+MODULES="complex_reciprocal"
 
 ############################# MAKEFILE   ####################################
 CURRENTFILE="${ROOTPATH}/Makefile"
@@ -59,6 +59,7 @@ SCALAPATH= ${SCALAPATH}
 MODULES= ${MODULES}
 
 TARGETS = \$(foreach name,\$(MODULES), \$(VERILOGPATH)/\$(name).v)
+TEST_TARGETS = \$(foreach name,\$(MODULES), test_\$(name))
 #Commands
 SBT=sbt -J-Xmx16G -J-Xss8M
 
@@ -69,11 +70,17 @@ done`
 .PHONY: all help clean \$(MODULES)
 
 
-all: \$(TARGETS)
+all: \$(TARGETS) \$(TEST_TARGETS)
 
 #Generate recipes for individual modules
 `for i in ${MODULES}; do
     echo -e "$i: \\$(VERILOGPATH)/$i.v"
+done`
+
+`for i in ${MODULES}; do
+	echo ".PHONY: test_$i"
+    echo "test_$i:"
+	echo -e "\t\\$(SBT) 'runMain $i.unit_test'" 
 done`
 
 #Template for conditional makes
