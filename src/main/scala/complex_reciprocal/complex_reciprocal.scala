@@ -5,7 +5,7 @@ package complex_reciprocal
 
 import chisel3.experimental._
 import chisel3._
-import chisel3.iotesters.PeekPokeTester
+//import chisel3.iotesters.PeekPokeTester
 import dsptools._
 import dsptools.DspTester
 import dsptools.numbers._
@@ -39,37 +39,38 @@ class complex_reciprocal_io( w: Int, b: Int)
 
 class complex_reciprocal(w: Int, b: Int) extends Module {
     //Signal type is fixed to complex fixed point
-    val proto= DspComplex(
-                FixedPoint(w.W,b.BP),
-                FixedPoint(w.W,b.BP)
-            ) 
-    val proto_extend= DspComplex(
-                FixedPoint((w+1).W,b.BP),
-                FixedPoint((w+1).W,b.BP)
-            ) 
-    val proto_result= DspComplex(
-                FixedPoint((2*w+2).W,(2*b).BP),
-                FixedPoint((2*w+2).W,(2*b).BP)
-            ) 
+
     //val io = IO(new complex_reciprocal_io( proto=proto.cloneType))
     val io = IO(new complex_reciprocal_io(w=w, b=b))
-    val nominator= RegInit(0.U.asTypeOf(proto_result.cloneType))
-    val denominator= RegInit(0.0.F((2*w+1).W,(2*b).BP))
-    println(denominator.binaryPoint)
-    println(denominator.getWidth)
-    val D_extend=Wire(proto_extend.cloneType)
-    val Dconj_extend=Wire(proto_extend.cloneType)
-    val N_extend=Wire(proto_extend.cloneType)
+    val proto_extend= DspComplex(
+                FixedPoint((io.N.real.getWidth+1).W,io.N.real.binaryPoint),
+                FixedPoint((io.N.imag.getWidth+1).W,io.N.imag.binaryPoint)
+            ) 
+
+    val D_extend=RegInit(0.U.asTypeOf(proto_extend.cloneType))
+    val N_extend=RegInit(0.U.asTypeOf(proto_extend.cloneType))
+
+    val nominator= RegInit(0.U.asTypeOf(io.Q.cloneType))
+    val denominator= RegInit(0.U.asTypeOf(io.Q.real))
+
     N_extend:=io.N
     D_extend:=io.D
-    Dconj_extend.real:=D_extend.real
-    Dconj_extend.imag:=0.0.F((w+1).W,b.BP)-D_extend.imag
-    nominator:=N_extend*Dconj_extend
-    denominator:=Dconj_extend.real*Dconj_extend.real+Dconj_extend.imag*Dconj_extend.imag
-    //io.Q.real:= (nominator.real.asSInt/denominator.asSInt).asFixedPoint((2*b).BP)
-    //io.Q.imag:= (nominator.imag.asSInt/denominator.asSInt).asFixedPoint((2*b).BP)
-    io.Q.real:= (nominator.real.asSInt/denominator.asSInt << w).asFixedPoint((2*b).BP)
-    io.Q.imag:= (nominator.imag.asSInt/denominator.asSInt << w ).asFixedPoint((2*b).BP)
+
+    nominator:=N_extend*D_extend.conj()
+    denominator:=D_extend.conj().abssq()
+
+    //Scale makes these integers
+    //Q.binary point gives you decimals
+    val scale=Seq(io.N.real.binaryPoint.get,denominator.binaryPoint.get).max
+
+    io.Q.real:= (
+        (nominator.real << (scale+io.Q.real.binaryPoint.get)).asSInt
+        / (denominator << io.Q.real.binaryPoint.get).asSInt
+    ).asFixedPoint(io.Q.real.binaryPoint)
+    io.Q.imag:= (
+        (nominator.imag << (scale+io.Q.imag.binaryPoint.get)).asSInt
+        / (denominator << io.Q.imag.binaryPoint.get).asSInt
+    ).asFixedPoint(io.Q.imag.binaryPoint)
 }
 
 //This gives you verilog
@@ -82,17 +83,22 @@ object complex_reciprocal extends App {
 }
 //clasUnitmmy extends Module { val io = IO(new Bundle {}) }
 class unit_tester(c: complex_reciprocal) extends DspTester(c) {
+
 //Tests are here 
-    poke(c.io.N.real, 5)
-    poke(c.io.N.imag, 5)
-    poke(c.io.D.real, 2)
-    poke(c.io.D.imag, -2)
+    val N=Complex(1.0,1.0)
+    val D=Complex(6.0,0.0)
+    poke(c.io.N, N)
+    poke(c.io.D, D)
     step(5)
-    expect(c.io.Q.real, 0)
-    expect(c.io.Q.imag, 2)
+    expect(c.io.Q, N/D)
 }
 
 object unit_test extends App {
+    val testOptions = new DspTesterOptionsManager {
+        dspTesterOptions = DspTesterOptions(
+        fixTolLSBs = 1
+    )
+    }
     iotesters.Driver.execute(args, () => new complex_reciprocal(
             w=16, b=8
         ) 
