@@ -60,7 +60,7 @@ class complex_reciprocal(w: Int, b: Int) extends Module {
     denominator:=D_extend.conj().abssq()
 
     //Scale makes these integers
-    //Q.binary point gives you decimals
+    //Q.binaryPoint gives you decimals
     val scale=Seq(io.N.real.binaryPoint.get,denominator.binaryPoint.get).max
 
     io.Q.real:= (
