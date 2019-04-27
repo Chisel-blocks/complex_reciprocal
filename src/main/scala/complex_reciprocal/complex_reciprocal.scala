@@ -7,7 +7,7 @@ import chisel3.experimental._
 import chisel3._
 //import chisel3.iotesters.PeekPokeTester
 import dsptools._
-import dsptools.DspTester
+import dsptools.{DspTester, DspTesterOptionsManager, DspTesterOptions}
 import dsptools.numbers._
 import breeze.math.Complex
 
