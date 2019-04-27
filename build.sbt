@@ -4,7 +4,7 @@ import scala.sys.process._
 
 organization := "edu.berkeley.cs"
 
-name := "complex_residual"
+name := "complex_reciprocal"
 
 version := scala.sys.process.Process("git rev-parse --short HEAD").!!.mkString.replaceAll("\\s", "")+"-SNAPSHOT"
 
