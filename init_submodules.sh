@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 #Init submodules in this dir, if any
 DIR="$( cd "$( dirname $0 )" && pwd )"
 git submodule update --init
@@ -33,5 +33,5 @@ git submodule update --init
 #    sbt publishLocal
 #done
 
-
 exit 0
+
