@@ -90,7 +90,9 @@ class unit_tester(c: complex_reciprocal) extends DspTester(c) {
     poke(c.io.N, N)
     poke(c.io.D, D)
     step(5)
-    expect(c.io.Q, N/D)
+    fixTolLSBs.withValue(1) {
+        expect(c.io.Q, N/D)
+    }
 }
 
 object unit_test extends App {
